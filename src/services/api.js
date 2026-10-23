@@ -1,14 +1,13 @@
 import axios from 'axios';
 
 const getBaseUrl = () => {
-    // If running in the browser, check hostname
     const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
     
     // Development and UAT domains
     const uatDomains = ['dev.khelclub.org', 'uat.khelclub.org'];
     
-    // If it's localhost, force it to use your local Flask backend
-    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    // If it's server-side rendering (hostname is empty) OR running locally
+    if (!hostname || hostname === 'localhost' || hostname === '127.0.0.1') {
         console.log('Using local Flask backend endpoint');
         return "http://localhost:5000";
     }
