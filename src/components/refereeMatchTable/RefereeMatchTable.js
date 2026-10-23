@@ -61,6 +61,40 @@ const RefereeMatchTable = ({ tournamentId }) => {
       toast.error(error.message || "Failed to start match");
     }
   };
+  const handleWalkover = async (match, winnerTeamId) => {
+  try {
+    const response = await fetch('/walkover', {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        match_id: match.match_id,
+        winner_team_id: winnerTeamId
+      })
+    });
+
+    const resp = await response.json();
+    if (!response.ok) {
+      throw new Error(resp.error || 'Failed to declare walkover');
+    }
+
+    // Update local state to mark match completed and set winner
+    setMatches(matches.map(m => {
+      if (m.match_id === match.match_id) {
+        return {
+          ...m,
+          match_result: 'W/O',
+          match_status: { ...m.match_status, status: 'completed', is_final: true, winner_team_id: winnerTeamId }
+        };
+      }
+      return m;
+    }));
+
+    toast.success('Walkover declared successfully');
+  } catch (error) {
+    console.error('Failed to declare walkover:', error);
+    toast.error(error.message || 'Failed to declare walkover');
+  }
+};
 
   const handleScoreUpdate = async (match, isFinal = false, override = false) => {
     try {
