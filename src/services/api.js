@@ -33,7 +33,6 @@ export const api = axios.create({
 
 // Add request interceptor for authentication if needed
 api.interceptors.request.use((config) => {
-  // Get token from localStorage or wherever you store it
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -46,7 +45,6 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Handle unauthorized access
       if (typeof window !== 'undefined') {
         localStorage.removeItem('token');
         window.location.href = '/login';
