@@ -1,10 +1,17 @@
 import axios from 'axios';
 
 const getBaseUrl = () => {
+    // If running in the browser, check hostname
     const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
     
     // Development and UAT domains
-    const uatDomains = ['localhost', 'dev.khelclub.org', 'uat.khelclub.org'];
+    const uatDomains = ['dev.khelclub.org', 'uat.khelclub.org'];
+    
+    // If it's localhost, force it to use your local Flask backend
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+        console.log('Using local Flask backend endpoint');
+        return "http://localhost:5000";
+    }
     
     // Check if current domain is in UAT domains list
     if (uatDomains.includes(hostname)) {
@@ -27,7 +34,7 @@ export const api = axios.create({
 // Add request interceptor for authentication if needed
 api.interceptors.request.use((config) => {
   // Get token from localStorage or wherever you store it
-  const token = localStorage.getItem('token');
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -40,9 +47,12 @@ api.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       // Handle unauthorized access
-      localStorage.removeItem('token');
-      window.location.href = '/login';
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('token');
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }
+);
 );
